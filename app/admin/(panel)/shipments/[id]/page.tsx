@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { q, isId } from '@/lib/db'
-import { GoogleMap } from '@/components/google-map'
+import { ShipmentMap } from '@/components/shipment-map-loader'
+import { shipmentMapProps } from '@/lib/points'
 import { STATUSES, STATUS_LABELS, fmt } from '@/lib/status'
 import { addEvent, deleteShipment } from '../../../actions'
 
@@ -53,7 +54,7 @@ export default async function ShipmentAdmin({
 
       <div className="rounded-2xl border border-navy/10 bg-white p-6">
         <h2 className="mb-3 text-lg font-semibold text-navy">Location</h2>
-        <GoogleMap query={s.current_location || s.destination} />
+        <ShipmentMap {...shipmentMapProps(s)} />
       </div>
 
       <form action={addEvent} className="space-y-3 rounded-2xl border border-navy/10 bg-white p-6">

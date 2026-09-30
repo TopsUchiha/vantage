@@ -9,3 +9,20 @@ export function buildPoints(s: any): MapPoint[] {
   return pts
 }
 
+
+// Props for <ShipmentMap /> (origin, current location and destination, when they have coordinates)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shipmentMapProps(s: any) {
+  const pt = (label: string, lat: unknown, lng: unknown) =>
+    lat != null && lng != null ? { label, lat: Number(lat), lng: Number(lng) } : null
+  return {
+    origin: pt(`Origin: ${s.origin}`, s.origin_lat, s.origin_lng),
+    current: pt(s.current_location || 'Current location', s.current_lat, s.current_lng),
+    destination: pt(`Destination: ${s.destination}`, s.dest_lat, s.dest_lng),
+    locationText: (s.current_location as string | null) ?? null,
+    query:
+      s.current_lat != null && s.current_lng != null
+        ? `${s.current_lat},${s.current_lng}`
+        : ((s.current_location || s.destination || '') as string),
+  }
+}

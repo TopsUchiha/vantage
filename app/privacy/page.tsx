@@ -45,7 +45,7 @@ export default function PrivacyPage() {
           list: [
             'Hosting and database providers that store and serve our website and records.',
             'Carriers, airlines, shipping lines, customs brokers and authorities involved in moving and clearing your shipment.',
-            'Google Maps: the tracking page shows an embedded Google map, so your browser connects to Google directly and Google can see your IP address. Separately, our staff look up shipment place names through OpenStreetMap.',
+            'Google Maps: the tracking page loads Google Maps, so your browser connects to Google directly and Google can see your IP address. Separately, our staff look up shipment place names through OpenStreetMap.',
             'Authorities or other parties when required by law.',
           ],
         },

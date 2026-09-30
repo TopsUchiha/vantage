@@ -27,13 +27,6 @@ export function ServiceCard({
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
         />
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-navy-dark/50 via-transparent to-transparent"
-          aria-hidden
-        />
-        <span className="absolute bottom-4 left-4 flex size-10 items-center justify-center rounded-lg bg-gold text-navy-dark shadow-lg">
-          <service.icon className="size-5" />
-        </span>
       </div>
       <div className="flex items-start justify-between gap-4 border-b border-border pt-5 pb-5">
         <div>

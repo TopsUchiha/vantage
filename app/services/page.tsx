@@ -44,13 +44,6 @@ export default function ServicesPage() {
                     sizes="(min-width: 1024px) 58vw, 100vw"
                     className="object-cover"
                   />
-                  <div
-                    className="absolute inset-0 bg-gradient-to-t from-navy-dark/45 via-transparent to-transparent"
-                    aria-hidden
-                  />
-                  <span className="absolute bottom-5 left-5 flex size-12 items-center justify-center rounded-xl bg-gold text-navy-dark shadow-lg">
-                    <service.icon className="size-6" />
-                  </span>
                 </div>
                 <div className="lg:col-span-5">
                   <p className="eyebrow text-muted-foreground">
