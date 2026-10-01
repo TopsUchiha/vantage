@@ -5,8 +5,6 @@ import { q, isId } from '@/lib/db'
 import { Barcode, PrintButton } from '@/components/admin/receipt-tools'
 import { ADMIN_BASE } from '@/lib/admin-path'
 import { ui } from '@/components/admin/ui'
-import { siteConfig } from '@/lib/site'
-import { shippingMode } from '@/lib/status'
 
 type Pkg = { qty: string; type: string; description: string; length: string; width: string; height: string; weight: string }
 
@@ -60,14 +58,6 @@ export default async function Receipt({ params }: { params: Promise<{ id: string
           <div className="mt-4"><Barcode value={s.tracking_number} /></div>
         </div>
 
-        <Details
-          title="SHIPMENT DETAILS"
-          rows={[
-            ['Tracking Number', s.tracking_number], ['Carrier', siteConfig.name], ['Carrier Reference No.', s.carrier_ref],
-            ['Shipping Mode', shippingMode(s.method)], ['Product', s.product], ['Quantity', s.quantity],
-            ['Total Freight', s.total_freight], ['Comment', s.comment],
-          ]}
-        />
         <Details
           title="SHIPPER DETAILS"
           rows={[['Shipper Name', s.sender_name], ['Phone Number', s.sender_phone], ['Address', s.sender_address], ['Email', s.sender_email]]}
