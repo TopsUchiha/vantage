@@ -150,7 +150,7 @@ function EmbedMap({ query }: { query: string }) {
         referrerPolicy="no-referrer-when-downgrade"
         sandbox="allow-scripts allow-same-origin"
       />
-      <div className="absolute top-3 left-3 z-10 flex overflow-hidden rounded-full border border-navy/15 shadow-md" role="group" aria-label="Map type">
+      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 overflow-hidden rounded-full border border-navy/15 shadow-md" role="group" aria-label="Map type">
         <button type="button" aria-pressed={!satellite} onClick={() => setSatellite(false)} className={segment(!satellite)}>
           Map
         </button>

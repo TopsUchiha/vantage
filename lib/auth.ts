@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createHmac, timingSafeEqual } from 'crypto'
+import { ADMIN_BASE } from '@/lib/admin-path'
 
 const NAME = 'vgl_session'
 
@@ -35,7 +36,7 @@ export async function getAdminId() {
 
 export async function requireAdmin() {
   const id = await getAdminId()
-  if (!id) redirect('/admin/login')
+  if (!id) redirect(ADMIN_BASE + '/login')
   return id
 }
 

@@ -2,13 +2,14 @@ import { MapPin } from 'lucide-react'
 import { q } from '@/lib/db'
 import { ShipmentMap } from '@/components/shipment-map-loader'
 import { shipmentMapProps } from '@/lib/points'
-import { STATUS_LABELS, fmt, fmtDate } from '@/lib/status'
+import { STATUS_LABELS, fmt, fmtDate, shippingMode } from '@/lib/status'
+import { siteConfig } from '@/lib/site'
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 border-b border-border py-3 last:border-0">
       <dt className="text-sm uppercase tracking-wide text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium text-navy">{value}</dd>
+      <dd className="text-base font-medium break-words text-navy">{value}</dd>
     </div>
   )
 }
@@ -54,11 +55,18 @@ export async function ShipmentResult({ trackingNumber }: { trackingNumber: strin
           <DetailRow label="Origin" value={shipment.origin} />
           <DetailRow label="Destination" value={shipment.destination} />
           <DetailRow label="Shipment Type" value={shipment.method} />
+          <DetailRow label="Shipping Mode" value={shippingMode(shipment.method)} />
+          <DetailRow label="Carrier" value={siteConfig.name} />
+          <DetailRow label="Carrier Reference No." value={shipment.carrier_ref ?? '—'} />
+          <DetailRow label="Product" value={shipment.product ?? '—'} />
+          <DetailRow label="Quantity" value={shipment.quantity ?? '—'} />
           <DetailRow label="Weight" value={shipment.weight ?? '—'} />
+          <DetailRow label="Total Freight" value={shipment.total_freight ?? '—'} />
           <DetailRow
             label="Estimated Delivery"
             value={shipment.eta ? fmtDate(shipment.eta) : '—'}
           />
+          <DetailRow label="Comment" value={shipment.comment ?? '—'} />
         </dl>
       </div>
 

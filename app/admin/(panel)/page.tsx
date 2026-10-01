@@ -1,10 +1,13 @@
 import Link from 'next/link'
 import { q } from '@/lib/db'
+import { newMessageCount } from '@/lib/admin-data'
 import { STATUSES, STATUS_LABELS, fmt } from '@/lib/status'
+import { ADMIN_BASE } from '@/lib/admin-path'
+import { cn } from '@/lib/utils'
+import { ui, StatusBadge } from '@/components/admin/ui'
 import { createShipment } from '../actions'
 
-const field =
-  'h-10 w-full rounded-lg border border-navy/15 bg-white px-3 text-sm text-navy outline-none focus:border-navy focus:ring-2 focus:ring-sky/50'
+const field = ui.input
 const PAGE = 20
 
 export default async function AdminHome({
@@ -31,9 +34,9 @@ export default async function AdminHome({
   }
   const w = where.length ? `where ${where.join(' and ')}` : ''
 
-  const [counts, [{ n: newMsgs }], [{ n: total }], rows] = await Promise.all([
+  const [counts, newMsgs, [{ n: total }], rows] = await Promise.all([
     q('select status, count(*)::int n from shipments group by status'),
-    q(`select count(*)::int n from contact_messages where status='NEW'`),
+    newMessageCount(),
     q(`select count(*)::int n from shipments ${w}`, params),
     q(
       `select id, tracking_number, receiver_name, origin, destination, status, current_location, eta, created_at
@@ -45,70 +48,80 @@ export default async function AdminHome({
   const all = counts.reduce((a, c) => a + c.n, 0)
   const pages = Math.max(1, Math.ceil(total / PAGE))
   const link = (p: number) =>
-    `/admin?${new URLSearchParams({ ...(term && { q: term }), ...(status && { status }), page: String(p) })}`
+    `${ADMIN_BASE}?${new URLSearchParams({ ...(term && { q: term }), ...(status && { status }), page: String(p) })}`
+
+  const tiles: [string, number, string][] = [
+    ['Total', all, 'text-white'],
+    ['In transit', by('IN_TRANSIT'), 'text-sky'],
+    ['Delivered', by('DELIVERED'), 'text-gold'],
+    ['Pending', by('PENDING'), 'text-white'],
+    ['On hold', by('ON_HOLD'), 'text-orange-300'],
+    ['Cancelled', by('CANCELLED'), 'text-red-300'],
+    ['New messages', newMsgs, 'text-gold'],
+  ]
 
   return (
     <div className="space-y-10">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ['Total', all], ['In transit', by('IN_TRANSIT')], ['Delivered', by('DELIVERED')], ['Pending', by('PENDING')],
-          ['On hold', by('ON_HOLD')], ['Cancelled', by('CANCELLED')], ['New messages', newMsgs],
-        ].map(([l, n]) => (
-          <div key={l} className="rounded-xl border border-navy/10 bg-white p-4">
-            <p className="text-xs uppercase text-muted-foreground">{l}</p>
-            <p className="text-2xl font-semibold text-navy">{n}</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        {tiles.map(([l, n, tone]) => (
+          <div
+            key={l}
+            className={`rounded-2xl border bg-white/[0.04] p-4 backdrop-blur ${l === 'New messages' && n > 0 ? 'border-gold/40' : 'border-white/10'}`}
+          >
+            <p className="text-[13px] font-semibold uppercase tracking-wider text-white/55">{l}</p>
+            <p className={`mt-2 text-3xl font-semibold ${tone}`}>{n}</p>
           </div>
         ))}
       </div>
 
       <section>
-        <form className="mb-3 flex flex-col gap-2 sm:flex-row">
+        <form className="mb-4 flex flex-col gap-3 sm:flex-row">
           <input name="q" defaultValue={term} placeholder="Search tracking #, name, email, phone, city" className={field} />
-          <select name="status" defaultValue={status} className={field + ' sm:w-48'}>
+          <select name="status" defaultValue={status} className={field + ' sm:w-56'}>
             <option value="">All statuses</option>
             {STATUSES.map((k) => <option key={k} value={k}>{STATUS_LABELS[k]}</option>)}
           </select>
-          <button className="h-10 rounded-lg bg-navy px-4 text-sm font-semibold text-white">Search</button>
+          <button className={ui.primary}>Search</button>
         </form>
-        <div className="overflow-x-auto rounded-xl border border-navy/10 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-navy/5 text-xs uppercase text-muted-foreground">
-              <tr>{['Tracking #', 'Receiver', 'Route', 'Status', 'Location', 'ETA', 'Created', ''].map((h) => <th key={h} className="px-4 py-3">{h}</th>)}</tr>
+        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur">
+          <table className="w-full text-left text-[15px]">
+            <thead className="bg-white/[0.06] text-[13px] uppercase tracking-wider text-white/60">
+              <tr>{['Tracking #', 'Receiver', 'Route', 'Status', 'Location', 'ETA', 'Created', ''].map((h) => <th key={h} className="px-4 py-3.5 font-semibold">{h}</th>)}</tr>
             </thead>
             <tbody>
               {rows.map((s) => (
-                <tr key={s.id} className="border-t border-navy/10">
-                  <td className="px-4 py-3 font-medium">
-                    <Link href={`/admin/shipments/${s.id}`} className="text-navy underline-offset-4 hover:underline">{s.tracking_number}</Link>
+                <tr key={s.id} className="border-t border-white/10 transition-colors hover:bg-white/[0.04]">
+                  <td className="px-4 py-3.5 font-semibold whitespace-nowrap">
+                    <Link href={`${ADMIN_BASE}/shipments/${s.id}`} className="text-gold underline-offset-4 hover:underline">{s.tracking_number}</Link>
                   </td>
-                  <td className="px-4 py-3">{s.receiver_name}</td>
-                  <td className="px-4 py-3">{s.origin} → {s.destination}</td>
-                  <td className="px-4 py-3">{STATUS_LABELS[s.status]}</td>
-                  <td className="px-4 py-3">{s.current_location ?? '—'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{s.eta ?? '—'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{fmt(s.created_at)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <Link href={`/admin/shipments/${s.id}/receipt`} className="text-navy underline-offset-4 hover:underline">Receipt</Link>
+                  <td className="px-4 py-3.5">{s.receiver_name}</td>
+                  <td className="px-4 py-3.5 text-white/75">{s.origin} → {s.destination}</td>
+                  <td className="px-4 py-3.5"><StatusBadge status={s.status} /></td>
+                  <td className="px-4 py-3.5 text-white/75">{s.current_location ?? '—'}</td>
+                  <td className="px-4 py-3.5 whitespace-nowrap text-white/75">{s.eta ?? '—'}</td>
+                  <td className="px-4 py-3.5 whitespace-nowrap text-white/75">{fmt(s.created_at)}</td>
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    <Link href={`${ADMIN_BASE}/shipments/${s.id}/receipt`} className="text-sky underline-offset-4 hover:underline">Receipt</Link>
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">No shipments found</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-white/60">No shipments found</td></tr>}
             </tbody>
           </table>
         </div>
-        <div className="mt-3 flex items-center justify-between text-sm text-navy">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[15px] text-white/70">
           <span>Page {page} of {pages} · {total} shipments</span>
-          <span className="flex gap-4">
-            {page > 1 && <Link href={link(page - 1)} className="underline">Previous</Link>}
-            {page < pages && <Link href={link(page + 1)} className="underline">Next</Link>}
+          <span className="flex gap-2">
+            {page > 1 && <Link href={link(page - 1)} className={ui.chip}>Previous</Link>}
+            {page < pages && <Link href={link(page + 1)} className={ui.chip}>Next</Link>}
           </span>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-navy/10 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold text-navy">Create Shipment</h2>
-        {sp.error && <p className="mb-3 text-sm text-red-600">Fill in all required fields (*).</p>}
-        <form action={createShipment} className="grid gap-3 sm:grid-cols-2">
+      <section className={ui.card}>
+        <h2 className={`${ui.h2} mb-5`}>Create shipment</h2>
+        {sp.error && <p className="mb-4 text-base text-red-300">Fill in all required fields (*).</p>}
+        <form action={createShipment} className="grid gap-4 sm:grid-cols-2">
           <input name="senderName" required placeholder="Sender name *" className={field} />
           <input name="senderPhone" placeholder="Sender phone" className={field} />
           <input name="senderEmail" type="email" placeholder="Sender email" className={field} />
@@ -126,9 +139,13 @@ export default async function AdminHome({
           <input name="weight" placeholder="Weight (e.g. 25 kg)" className={field} />
           <input name="eta" type="date" className={field} />
           <input name="description" placeholder="Description" className={field} />
-          <p className="text-sm font-semibold text-navy sm:col-span-2">Package details (optional, up to 3 rows)</p>
+          <input name="product" placeholder="Product (what is being shipped)" className={field} />
+          <input name="quantity" placeholder="Quantity (e.g. 3 boxes)" className={field} />
+          <input name="totalFreight" placeholder="Total freight (e.g. $1,250.00)" className={field} />
+          <textarea name="comment" rows={3} placeholder="Comment (shown to the customer)" className={cn(field, 'h-auto min-h-24 py-3 sm:col-span-2')} />
+          <p className={`${ui.label} mt-2 sm:col-span-2`}>Package details (optional, up to 3 rows)</p>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="grid grid-cols-3 gap-2 sm:col-span-2 sm:grid-cols-7">
+            <div key={i} className="grid grid-cols-3 gap-3 sm:col-span-2 sm:grid-cols-7">
               <input name={`pkgQty${i}`} placeholder="Qty" className={field} />
               <input name={`pkgType${i}`} placeholder="Piece type" className={field} />
               <input name={`pkgDesc${i}`} placeholder="Description" className={field} />
@@ -138,7 +155,7 @@ export default async function AdminHome({
               <input name={`pkgKg${i}`} placeholder="Weight (kg)" className={field} />
             </div>
           ))}
-          <button className="h-10 rounded-lg bg-gold font-semibold text-navy-dark hover:bg-gold-dark sm:col-span-2">Create shipment</button>
+          <button className={`${ui.primary} mt-2 sm:col-span-2`}>Create shipment</button>
         </form>
       </section>
     </div>

@@ -36,4 +36,11 @@ create table if not exists contact_messages (
 );
 create index if not exists messages_status_idx on contact_messages(status);
 alter table shipments add column if not exists packages jsonb not null default '[]'::jsonb;
+alter table shipments add column if not exists product text;
+alter table shipments add column if not exists quantity text;
+alter table shipments add column if not exists total_freight text;
+alter table shipments add column if not exists comment text;
+alter table shipments add column if not exists carrier_ref text;
+update shipments set carrier_ref = 'CR-' || upper(substr(md5(id::text), 1, 8)) where carrier_ref is null;
+create unique index if not exists shipments_carrier_ref_key on shipments(carrier_ref);
 `

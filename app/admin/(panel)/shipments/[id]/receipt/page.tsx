@@ -3,6 +3,10 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { q, isId } from '@/lib/db'
 import { Barcode, PrintButton } from '@/components/admin/receipt-tools'
+import { ADMIN_BASE } from '@/lib/admin-path'
+import { ui } from '@/components/admin/ui'
+import { siteConfig } from '@/lib/site'
+import { shippingMode } from '@/lib/status'
 
 type Pkg = { qty: string; type: string; description: string; length: string; width: string; height: string; weight: string }
 
@@ -44,18 +48,26 @@ export default async function Receipt({ params }: { params: Promise<{ id: string
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="mb-4 flex justify-between print:hidden">
-        <Link href={`/admin/shipments/${id}`} className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light">← Back</Link>
+      <div className="mb-5 flex justify-between print:hidden">
+        <Link href={`${ADMIN_BASE}/shipments/${id}`} className={ui.secondary}>← Back</Link>
         <PrintButton />
       </div>
 
-      <div className="rounded-lg border border-navy/15 bg-white p-8 print:border-0 print:p-0">
+      <div className="rounded-2xl border border-navy/15 bg-white p-8 text-navy shadow-2xl shadow-black/30 print:border-0 print:p-0 print:shadow-none">
         <div className="flex flex-col items-center text-center">
           <Image src="/vantage-logo.webp" alt="Vantage Logistics" width={160} height={87} />
           <p className="mt-2 text-sm font-medium text-navy">Shipment receipt</p>
           <div className="mt-4"><Barcode value={s.tracking_number} /></div>
         </div>
 
+        <Details
+          title="SHIPMENT DETAILS"
+          rows={[
+            ['Tracking Number', s.tracking_number], ['Carrier', siteConfig.name], ['Carrier Reference No.', s.carrier_ref],
+            ['Shipping Mode', shippingMode(s.method)], ['Product', s.product], ['Quantity', s.quantity],
+            ['Total Freight', s.total_freight], ['Comment', s.comment],
+          ]}
+        />
         <Details
           title="SHIPPER DETAILS"
           rows={[['Shipper Name', s.sender_name], ['Phone Number', s.sender_phone], ['Address', s.sender_address], ['Email', s.sender_email]]}

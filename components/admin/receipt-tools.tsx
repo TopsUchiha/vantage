@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import JsBarcode from 'jsbarcode'
+import { ui } from './ui'
 
 export function Barcode({ value }: { value: string }) {
   const ref = useRef<SVGSVGElement>(null)
@@ -13,7 +14,7 @@ export function Barcode({ value }: { value: string }) {
 
 export function PrintButton() {
   return (
-    <button onClick={() => window.print()} className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-navy-dark print:hidden">
+    <button onClick={() => window.print()} className={ui.primary}>
       Print / Save as PDF
     </button>
   )

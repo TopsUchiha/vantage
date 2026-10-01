@@ -15,6 +15,7 @@
   --color-paper: var(--paper);
   --color-ink: var(--ink);
   --font-sans: var(--font-jakarta);
+  --font-display: var(--font-space), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
