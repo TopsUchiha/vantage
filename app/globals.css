@@ -149,3 +149,12 @@
     }
   }
 }
+
+/* Fix: dropdown options were white text on a white popup */
+@layer base {
+  select option,
+  select optgroup {
+    background-color: var(--navy);
+    color: #ffffff;
+  }
+}
